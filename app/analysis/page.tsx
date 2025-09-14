@@ -14,10 +14,10 @@ export default function AnalysisPage() {
         const parsed = JSON.parse(saved)
         if (parsed?.race) {
           // ordenar descendente
-          const sorted = Object.entries(parsed.race)
-            .sort((a, b) => b[1] - a[1])
+          const sorted = Object.entries(parsed.race as Record<string, number>)
+            .sort((a, b) => (b[1] as number) - (a[1] as number))
             .reduce((acc, [k, v]) => {
-              acc[k] = v
+              acc[k] = v as number
               return acc
             }, {} as RaceData)
 
