@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { useRouter } from 'next/navigation'
 
 type Step = 0 | 1 | 2
 
@@ -13,6 +14,7 @@ const API_URL =
 const isAlphaString = (s: string) => /^[A-Za-zÀ-ÿ' -]{2,}$/.test(s.trim())
 
 export default function IntroductionPage() {
+  const router = useRouter()
   const [step, setStep] = useState<Step>(0)
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
@@ -41,6 +43,7 @@ export default function IntroductionPage() {
       setStep(2)
       return
     }
+
     if (step === 2) {
       if (!locationValid) return setMessage('Please enter a valid location.')
       setMessage(null)
@@ -62,6 +65,11 @@ export default function IntroductionPage() {
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok) throw new Error(data?.error || 'Request failed.')
+
+        if (data?.SUCCUSS) {
+          router.push('/upload') // 👈 Redirect automático a /upload
+        }
+
         setMessage(data?.SUCCUSS || `Success: Added ${name} from ${location}.`)
       } catch (err: any) {
         setMessage(`Could not submit. ${err?.message || 'Please try again.'}`)
