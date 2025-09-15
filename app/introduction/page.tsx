@@ -63,14 +63,18 @@ export default function IntroductionPage() {
             location: location.trim(),
           }),
         })
+
         const data = await res.json().catch(() => ({}))
         if (!res.ok) throw new Error(data?.error || 'Request failed.')
 
-        if (data?.Success) {
-          router.push('/upload') // 👈 Redirect automático a /upload
-        }
-
         setMessage(data?.Success || `Success: Added ${name} from ${location}.`)
+
+        if (data?.Success) {
+          // redirige a /upload
+          setTimeout(() => {
+            router.push('/upload')
+          }, 1000)
+        }
       } catch (err: any) {
         setMessage(`Could not submit. ${err?.message || 'Please try again.'}`)
       } finally {
