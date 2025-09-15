@@ -2,87 +2,65 @@
 
 import { useEffect, useState } from 'react'
 
-type RaceData = Record<string, number>
+type DemographicData = Record<string, number>
 
 export default function AnalysisPage() {
-  const [race, setRace] = useState<RaceData>({})
+  const [race, setRace] = useState<DemographicData>({})
+  const [age, setAge] = useState<DemographicData>({})
+  const [gender, setGender] = useState<DemographicData>({})
+
+  const sortDesc = (obj: Record<string, number>) =>
+    Object.entries(obj)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((acc, [k, v]) => {
+        acc[k] = v
+        return acc
+      }, {} as Record<string, number>)
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('analysis-data')
+      const saved = localStorage.getItem('phase2-data')
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (parsed?.race) {
-          // ordenar descendente
-          const sorted = Object.entries(parsed.race as Record<string, number>)
-            .sort((a, b) => (b[1] as number) - (a[1] as number))
-            .reduce((acc, [k, v]) => {
-              acc[k] = v as number
-              return acc
-            }, {} as RaceData)
+        console.log('Parsed localStorage:', parsed)
 
-          setRace(sorted)
-        }
+        if (parsed?.data?.race) setRace(sortDesc(parsed.data.race))
+        if (parsed?.data?.age) setAge(sortDesc(parsed.data.age))
+        if (parsed?.data?.gender) setGender(sortDesc(parsed.data.gender))
       }
     } catch (err) {
       console.error('Error loading analysis data', err)
     }
   }, [])
 
+  const renderBlock = (title: string, data: DemographicData) => (
+    <div>
+      <h2 className="text-2xl font-light mb-4">{title}</h2>
+      {Object.keys(data).length > 0 ? (
+        <div>
+          {Object.entries(data).map(([k, v]) => (
+            <div
+              key={k}
+              className="flex justify-between py-1 border-b last:border-none"
+            >
+              <span>{k}</span>
+              <span>{(v * 100).toFixed(2)}%</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="opacity-60">No data available</p>
+      )}
+    </div>
+  )
+
   return (
-    <main className="min-h-screen bg-white text-black">
-      {/* Top bar */}
-      <div className="flex items-center justify-between py-6 px-8 border-b text-xs tracking-widest">
-        <div className="flex gap-3">
-          <span className="font-medium">SKINSTRIC</span>
-          <span className="opacity-60">[ ANALYSIS ]</span>
-        </div>
-      </div>
-
-      <section className="p-10">
-        <h1 className="text-5xl font-light mb-8">DEMOGRAPHICS</h1>
-
-        <div className="grid grid-cols-2 gap-12">
-          {/* Main circle */}
-          <div className="flex flex-col items-center">
-            <p className="text-xl mb-4">{Object.keys(race)[0]}</p>
-            <div className="w-64 h-64 rounded-full border flex items-center justify-center text-4xl">
-              {race[Object.keys(race)[0]]
-                ? (race[Object.keys(race)[0]] * 100).toFixed(2) + '%'
-                : '--'}
-            </div>
-            <p className="mt-6 text-xs opacity-60 text-center">
-              If A.I. estimate is wrong, select the correct one.
-            </p>
-          </div>
-
-          {/* Race list */}
-          <div>
-            <div className="flex justify-between font-medium border-b pb-2">
-              <span>Race</span>
-              <span>A.I. Confidence</span>
-            </div>
-            {Object.entries(race).map(([k, v]) => (
-              <div
-                key={k}
-                className="flex justify-between py-2 border-b last:border-none"
-              >
-                <span>{k}</span>
-                <span>{(v * 100).toFixed(2)}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom buttons */}
-      <div className="flex justify-end gap-3 px-8 py-6 border-t">
-        <button className="border px-4 py-2 hover:bg-black hover:text-white transition">
-          Reset
-        </button>
-        <button className="border px-4 py-2 hover:bg-black hover:text-white transition">
-          Confirm
-        </button>
+    <main className="min-h-screen bg-white text-black p-10">
+      <h1 className="text-5xl font-light mb-10">DEMOGRAPHICS</h1>
+      <div className="grid grid-cols-3 gap-12">
+        {renderBlock('Race', race)}
+        {renderBlock('Age', age)}
+        {renderBlock('Gender', gender)}
       </div>
     </main>
   )

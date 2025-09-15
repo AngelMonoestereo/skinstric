@@ -7,7 +7,6 @@ export default function UploadPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  // Convert uploaded file → base64
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -16,22 +15,21 @@ export default function UploadPage() {
       reader.onerror = (error) => reject(error)
     })
 
-  // Handle gallery file upload
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
     setLoading(true)
-
     try {
       const base64 = await fileToBase64(file)
+      const cleanBase64 = base64.split(',')[1]
 
       const res = await fetch(
         'https://us-central1-frontend-simplified.cloudfunctions.net/skinstricPhaseTwo',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ Image: base64 }),
+          body: JSON.stringify({ image: cleanBase64 }),
         }
       )
 
@@ -39,21 +37,19 @@ export default function UploadPage() {
       console.log('API response:', data)
 
       localStorage.setItem('phase2-data', JSON.stringify(data))
-
       router.push('/analysis')
     } catch (err) {
       console.error(err)
       alert('Upload failed, try again.')
+    } finally {
       setLoading(false)
     }
   }
 
-  // Handle dummy "Scan Face"
   const handleScanFace = async () => {
     setLoading(true)
-
     try {
-      const dummyImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...'
+      const dummyImage = 'iVBORw0KGgoAAAANSUhEUgAAAAUA...' // base64 mínimo de prueba
 
       const res = await fetch(
         'https://us-central1-frontend-simplified.cloudfunctions.net/skinstricPhaseTwo',
@@ -65,11 +61,14 @@ export default function UploadPage() {
       )
 
       const data = await res.json()
-      localStorage.setItem('phase2-data', JSON.stringify(data))
+      console.log('API response (dummy):', data)
 
+      localStorage.setItem('phase2-data', JSON.stringify(data))
       router.push('/analysis')
     } catch (err) {
       console.error(err)
+      alert('Scan failed, try again.')
+    } finally {
       setLoading(false)
     }
   }
@@ -78,7 +77,6 @@ export default function UploadPage() {
     <main className="min-h-screen flex flex-col items-center justify-center bg-white text-black">
       {!loading ? (
         <div className="flex gap-16">
-          {/* Scan Face option */}
           <button
             onClick={handleScanFace}
             className="w-40 h-40 border-2 border-dotted border-black flex items-center justify-center rotate-45"
@@ -88,7 +86,6 @@ export default function UploadPage() {
             </span>
           </button>
 
-          {/* Access Gallery option */}
           <label className="w-40 h-40 border-2 border-dotted border-black flex items-center justify-center rotate-45 cursor-pointer">
             <span className="-rotate-45 text-xs tracking-widest text-center">
               ALLOW A.I. <br /> ACCESS GALLERY
@@ -111,7 +108,6 @@ export default function UploadPage() {
         </div>
       )}
 
-      {/* Back button */}
       <div className="absolute bottom-6 left-6">
         <button
           onClick={() => router.back()}
