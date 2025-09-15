@@ -66,11 +66,11 @@ export default function IntroductionPage() {
         const data = await res.json().catch(() => ({}))
         if (!res.ok) throw new Error(data?.error || 'Request failed.')
 
-        if (data?.SUCCUSS) {
+        if (data?.Success) {
           router.push('/upload') // 👈 Redirect automático a /upload
         }
 
-        setMessage(data?.SUCCUSS || `Success: Added ${name} from ${location}.`)
+        setMessage(data?.Success || `Success: Added ${name} from ${location}.`)
       } catch (err: any) {
         setMessage(`Could not submit. ${err?.message || 'Please try again.'}`)
       } finally {
