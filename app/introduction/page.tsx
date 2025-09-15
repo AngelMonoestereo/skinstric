@@ -64,17 +64,23 @@ export default function IntroductionPage() {
           }),
         })
 
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(data?.error || 'Request failed.')
+        const data = await res.json().catch(() => null)
 
-        setMessage(data?.Success || `Success: Added ${name} from ${location}.`)
-
-        if (data?.Success) {
-          // redirige a /upload
-          setTimeout(() => {
-            router.push('/upload')
-          }, 1000)
+        if (!res.ok) {
+          setMessage(data?.error || 'Request failed.')
+          return
         }
+
+        // Acepta ambas variantes del backend: "SUCCUSS" (docs) o "Success"
+        const okMsg: string | undefined = (data &&
+          (data.SUCCUSS || data.Success)) as string | undefined
+
+        setMessage(okMsg || `Success: Added ${name} from ${location}.`)
+
+        // Con status 200, pasa a /upload aunque la key tenga variaciones
+        setTimeout(() => {
+          router.push('/upload')
+        }, 600)
       } catch (err: any) {
         setMessage(`Could not submit. ${err?.message || 'Please try again.'}`)
       } finally {
